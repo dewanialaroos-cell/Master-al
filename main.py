@@ -54,7 +54,8 @@ def main():
 
         # Generate signal & trade levels
         signal, long_s, short_s = risk_management.generate_signal(tech_score)
-        sl, tp = risk_management.calculate_trade_levels(price, signal, tf_analysis["atr"])
+        sl, tp = risk_management.calculate_trade_levels(price, signal, df_1h, tf_analysis["atr"], tech_score)
+    
 
         # Active trade signal record karein (for self-learning tracking)
         if signal != "NO TRADE":
