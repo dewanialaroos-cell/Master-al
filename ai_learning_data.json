@@ -1,0 +1,279 @@
+{
+    "history": [
+        {
+            "symbol": "BTC/USDT",
+            "signal": "LONG",
+            "entry_price": 86617.8,
+            "stop_loss": 84821.441711,
+            "take_profit": 92366.146524,
+            "timestamp": "2026-09-22T17:33:40.659405+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "ETH/USDT",
+            "signal": "LONG",
+            "entry_price": 2757.95,
+            "stop_loss": 2704.726363,
+            "take_profit": 2997.456364,
+            "timestamp": "2026-09-22T17:33:40.834739+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "XRP/USDT",
+            "signal": "LONG",
+            "entry_price": 1.574,
+            "stop_loss": 1.480481,
+            "take_profit": 1.994837,
+            "timestamp": "2026-09-22T17:33:41.021392+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "DOGE/USDT",
+            "signal": "LONG",
+            "entry_price": 0.10001,
+            "stop_loss": 0.096196,
+            "take_profit": 0.117173,
+            "timestamp": "2026-09-22T17:33:41.217693+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "SOL/USDT",
+            "signal": "LONG",
+            "entry_price": 118.17,
+            "stop_loss": 114.943061,
+            "take_profit": 132.691226,
+            "timestamp": "2026-09-22T17:33:41.395816+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "NEAR/USDT",
+            "signal": "LONG",
+            "entry_price": 4.446,
+            "stop_loss": 4.052401,
+            "take_profit": 5.705518,
+            "timestamp": "2026-09-22T17:33:41.571580+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "ZEC/USDT",
+            "signal": "LONG",
+            "entry_price": 1550.63,
+            "stop_loss": 1432.697512,
+            "take_profit": 1928.013962,
+            "timestamp": "2026-09-22T17:33:41.781353+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "PEPE/USDT",
+            "signal": "LONG",
+            "entry_price": 4.904e-06,
+            "stop_loss": 5e-06,
+            "take_profit": 6e-06,
+            "timestamp": "2026-09-22T17:33:42.149514+00:00",
+            "status": "LOSS"
+        },
+        {
+            "symbol": "TAO/USDT",
+            "signal": "LONG",
+            "entry_price": 314.0,
+            "stop_loss": 297.58522,
+            "take_profit": 366.527296,
+            "timestamp": "2026-09-22T17:33:42.525720+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "LINK/USDT",
+            "signal": "LONG",
+            "entry_price": 13.041,
+            "stop_loss": 12.659735,
+            "take_profit": 14.261048,
+            "timestamp": "2026-09-22T17:33:42.726579+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "HYPE/USDT",
+            "signal": "LONG",
+            "entry_price": 96.719,
+            "stop_loss": 91.61372,
+            "take_profit": 119.692759,
+            "timestamp": "2026-09-22T17:33:42.908422+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "BCH/USDT",
+            "signal": "LONG",
+            "entry_price": 330.7,
+            "stop_loss": 256.95566,
+            "take_profit": 566.681887,
+            "timestamp": "2026-09-22T17:33:43.094535+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "AAVE/USDT",
+            "signal": "LONG",
+            "entry_price": 144.39,
+            "stop_loss": 138.629474,
+            "take_profit": 162.823683,
+            "timestamp": "2026-09-22T17:33:43.455712+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "SHIB/USDT",
+            "signal": "LONG",
+            "entry_price": 6.041e-06,
+            "stop_loss": 6e-06,
+            "take_profit": 7e-06,
+            "timestamp": "2026-09-22T17:33:44.223584+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "DOT/USDT",
+            "signal": "LONG",
+            "entry_price": 1.185,
+            "stop_loss": 1.136005,
+            "take_profit": 1.341783,
+            "timestamp": "2026-09-22T17:33:44.405103+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "WIF/USDT",
+            "signal": "LONG",
+            "entry_price": 0.2604,
+            "stop_loss": 0.231774,
+            "take_profit": 0.323378,
+            "timestamp": "2026-09-22T17:33:44.602753+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "LTC/USDT",
+            "signal": "LONG",
+            "entry_price": 61.94,
+            "stop_loss": 59.333989,
+            "take_profit": 70.279234,
+            "timestamp": "2026-09-22T17:33:44.790474+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "TRUMP/USDT",
+            "signal": "LONG",
+            "entry_price": 2.181,
+            "stop_loss": 2.093205,
+            "take_profit": 2.461944,
+            "timestamp": "2026-09-22T17:33:44.984620+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "XLM/USDT",
+            "signal": "LONG",
+            "entry_price": 0.21478,
+            "stop_loss": 0.20688,
+            "take_profit": 0.25033,
+            "timestamp": "2026-09-22T17:33:45.157323+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "SEI/USDT",
+            "signal": "LONG",
+            "entry_price": 0.06099,
+            "stop_loss": 0.057628,
+            "take_profit": 0.071747,
+            "timestamp": "2026-09-22T17:33:45.608436+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "ADA/USDT",
+            "signal": "LONG",
+            "entry_price": 0.2499,
+            "stop_loss": 0.238311,
+            "take_profit": 0.286985,
+            "timestamp": "2026-09-22T17:33:45.802718+00:00",
+            "status": "PENDING"
+        }
+    ],
+    "stats": {
+        "BTC/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "ETH/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "XRP/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "DOGE/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "SOL/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "NEAR/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "ZEC/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "PEPE/USDT": {
+            "wins": 0,
+            "losses": 1
+        },
+        "TAO/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "LINK/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "HYPE/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "BCH/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "AAVE/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "SHIB/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "DOT/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "WIF/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "LTC/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "TRUMP/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "XLM/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "SEI/USDT": {
+            "wins": 0,
+            "losses": 0
+        },
+        "ADA/USDT": {
+            "wins": 0,
+            "losses": 0
+        }
+    }
+}
