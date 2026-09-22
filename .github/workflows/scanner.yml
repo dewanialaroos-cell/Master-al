@@ -35,3 +35,11 @@ jobs:
           name: crypto-scan-results
           path: crypto_scan_results.csv
           
+      - name: Commit and Push AI Learning Data
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add ai_learning_data.json
+          git commit -m "Auto-update AI self-learning database [skip ci]" || echo "No changes to commit"
+          git push
+          
