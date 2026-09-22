@@ -1,9 +1,12 @@
 name: Run Crypto Master AI Scanner
 
 on:
-  workflow_dispatch: # Iss option se aap manually button daba kar run kar sakte hain
+  workflow_dispatch:
   schedule:
-    - cron: '0 */2 * * *' # Har 2 ghante mein automatically run hoga (Optional)
+    - cron: '0 */2 * * *'
+
+permissions:
+  contents: write
 
 jobs:
   run-scanner:
