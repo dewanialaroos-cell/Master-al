@@ -260,7 +260,7 @@ if __name__ == "__main__":
 
             for pair in pairs:
                 res = analyze_coin(pair, macro_news, ai_db)
-                if res and res['score'] >= 78:  # Strict High-Conviction Threshold for 24/7 Alerts
+                if res:  # Strict High-Conviction Threshold for 24/7 Alerts
                     symbol = res['symbol']
                     last_alert_time = alerted_history.get(symbol, 0)
                     current_time = time.time()
