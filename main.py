@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 import json
 import pandas as pd
@@ -8,7 +9,7 @@ import feedparser
 from datetime import datetime
 
 # ==========================================
-# 1. EXCLUDED STABLECOINS & FIAT LIST
+# 1. CONFIGURATIONS & EXCLUSIONS
 # ==========================================
 EXCLUDED_STABLES = [
     'USDT', 'USDC', 'FDUSD', 'DAI', 'TUSD', 'USDE', 'USDD', 
@@ -19,67 +20,67 @@ def is_stablecoin(symbol):
     base = symbol.split('/')[0].split(':')[0].upper()
     return base in EXCLUDED_STABLES
 
-# ==========================================
-# 2. NEURAL SELF-LEARNING & MEMORY CORE
-# ==========================================
 LEARNING_FILE = "ai_learning_data.json"
+ALERTED_HISTORY_FILE = "alerted_history.json"
 
-def load_ai_neural_matrix():
-    if os.path.exists(LEARNING_FILE):
+def load_json_db(filename, default_val):
+    if os.path.exists(filename):
         try:
-            with open(LEARNING_FILE, "r") as f:
+            with open(filename, "r") as f:
                 return json.load(f)
         except Exception:
             pass
-    # Autonomous Quantum Neural Weights Matrix
-    return {
-        "neural_weights": {"tech": 0.30, "futures": 0.25, "agent_debate": 0.20, "cmc": 0.15, "spread": 0.10},
-        "score_offsets": {},
-        "history": {}
-    }
+    return default_val
 
-def save_ai_neural_matrix(data):
+def save_json_db(filename, data):
     try:
-        with open(LEARNING_FILE, "w") as f:
+        with open(filename, "w") as f:
             json.dump(data, f, indent=4)
     except Exception as e:
-        print(f"Neural Matrix Sync Error: {e}")
-
-def neural_reinforcement_learning(symbol, current_price, ai_db):
-    """Self-Optimizing Neural Adjustment based on Past Target/SL Hit"""
-    history = ai_db.get("history", {})
-    offsets = ai_db.get("score_offsets", {})
-    
-    if symbol in history:
-        last = history[symbol]
-        tp1, sl = last.get("tp1", 0), last.get("sl", 0)
-        signal = last.get("signal", "LONG 🟢")
-        
-        if "LONG" in signal:
-            if tp1 > 0 and current_price >= tp1:
-                offsets[symbol] = min(30, offsets.get(symbol, 0) + 6)
-            elif sl > 0 and current_price <= sl:
-                offsets[symbol] = max(-30, offsets.get(symbol, 0) - 6)
-        else:
-            if tp1 > 0 and current_price <= tp1:
-                offsets[symbol] = min(30, offsets.get(symbol, 0) + 6)
-            elif sl > 0 and current_price >= sl:
-                offsets[symbol] = max(-30, offsets.get(symbol, 0) - 6)
-
-    ai_db["score_offsets"] = offsets
-    return ai_db
+        print(f"Database Sync Error ({filename}): {e}")
 
 # ==========================================
-# 3. COINMARKETCAP FUNDAMENTALS
+# 2. MARKET PSYCHOLOGY & BEHAVIORAL ENGINE
+# ==========================================
+def analyze_market_psychology(rsi, funding_rate, ob_ratio, volume_spike):
+    """
+    Detects retail human psychology (FOMO, Panic, Whale Traps, Capitulation)
+    """
+    psychology_score = 50
+    sentiment_tag = "NEUTRAL ⚖️"
+    
+    # Extreme Greed / Retail FOMO Trap (Danger Zone for Longs)
+    if rsi > 78 and funding_rate > 0.08:
+        psychology_score -= 30
+        sentiment_tag = "⚠️ RETAIL FOMO TRAP (Overheated)"
+    
+    # Panic Capitulation / Blood in the Streets (Smart Money Accumulation)
+    elif rsi < 28 and funding_rate < -0.02 and volume_spike:
+        psychology_score += 40
+        sentiment_tag = "💎 PANIC CAPITULATION (Whale Accumulation)"
+    
+    # Healthy Bullish Momentum
+    elif 45 <= rsi <= 65 and funding_rate <= 0.04 and ob_ratio > 1.2:
+        psychology_score += 25
+        sentiment_tag = "🚀 HEALTHY INSTITUTIONAL FLOW"
+        
+    # Bearish Breakdown Psychology
+    elif rsi < 40 and funding_rate > 0.05:
+        psychology_score -= 20
+        sentiment_tag = "🩸 WEAK HANDS BLEEDING"
+        
+    return psychology_score, sentiment_tag
+
+# ==========================================
+# 3. MULTI-AGENT COUNCIL & COINMARKETCAP
 # ==========================================
 def fetch_cmc_fundamentals(symbol):
     api_key = os.getenv("CMC_API_KEY")
-    if not api_key:
-        return 50
+    if not api_key: return 50
     clean_symbol = symbol.split('/')[0].upper()
-    url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
     try:
-        res = requests.get(url, headers={"X-CMC_PRO_API_KEY": api_key}, params={"symbol": clean_symbol}, timeout=4)
+        res = requests.get("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest", 
+                           headers={"X-CMC_PRO_API_KEY": api_key}, params={"symbol": clean_symbol}, timeout=4)
         if res.status_code == 200:
             rank = res.json()["data"][clean_symbol][0].get("cmc_rank", 500)
             if rank <= 15: return 95
@@ -90,39 +91,22 @@ def fetch_cmc_fundamentals(symbol):
         pass
     return 50
 
-# ==========================================
-# 4. MULTI-AGENT DEBATE ENGINE (THE COUNCIL)
-# ==========================================
-def multi_agent_council_debate(tech_score, futures_score, rsi, funding_rate, ob_ratio):
+def multi_agent_council_debate(tech_score, futures_score, psych_score):
     """Autonomous AI Agents Debate to Filter Out Fakeouts"""
-    bull_agent_score = tech_score
-    bear_agent_risk = 0
-    
-    # Bullish Agent perspective
-    if rsi < 35: bull_agent_score += 15
-    if ob_ratio > 1.3: bull_agent_score += 15
-    
-    # Bearish / Risk Agent perspective
-    if funding_rate > 0.08: bear_agent_risk += 25 # Overleveraged Long danger
-    elif funding_rate < -0.05: bear_agent_risk -= 15 # Short squeeze bonus
-    
-    # Quant Judge Consensus Verdict
-    consensus_score = int((bull_agent_score * 0.65) - (bear_agent_risk * 0.35))
-    return max(0, min(100, consensus_score))
+    consensus = int((tech_score * 0.35) + (futures_score * 0.30) + (psych_score * 0.35))
+    return max(0, min(100, consensus))
 
 # ==========================================
-# 5. QUANTUM MARKET DATA FETCHERS
+# 4. QUANTUM DEEP MARKET DATA FETCHERS
 # ==========================================
 def fetch_quantum_market_data(symbol):
     exchange_binance = ccxt.binance()
     exchange_bybit = ccxt.bybit()
     
-    # Multi-Timeframe Matrix (15m, 1h, 4h)
     df_15m = pd.DataFrame(exchange_binance.fetch_ohlcv(symbol, timeframe="15m", limit=50), columns=['t', 'o', 'h', 'l', 'c', 'v'])
     df_1h = pd.DataFrame(exchange_binance.fetch_ohlcv(symbol, timeframe="1h", limit=100), columns=['t', 'o', 'h', 'l', 'c', 'v'])
     df_4h = pd.DataFrame(exchange_binance.fetch_ohlcv(symbol, timeframe="4h", limit=50), columns=['t', 'o', 'h', 'l', 'c', 'v'])
     
-    # Cross-Exchange Spread Arbitrage
     spread = 0.0
     try:
         t_bin = exchange_binance.fetch_ticker(symbol)
@@ -131,7 +115,6 @@ def fetch_quantum_market_data(symbol):
     except Exception:
         pass
 
-    # Orderbook Wall & Funding Rates
     ob_ratio = 1.0
     try:
         ob = exchange_binance.fetch_order_book(symbol, limit=20)
@@ -148,7 +131,17 @@ def fetch_quantum_market_data(symbol):
     except Exception:
         pass
 
-    return df_15m, df_1h, df_4h, ob_ratio, funding, spread
+    # Volume Spike Check (Compare last volume with 20-period average)
+    vol_spike = False
+    try:
+        avg_vol = df_1h['v'].rolling(20).mean().iloc[-1]
+        current_vol = df_1h['v'].iloc[-1]
+        if current_vol > (avg_vol * 1.8):
+            vol_spike = True
+    except Exception:
+        pass
+
+    return df_15m, df_1h, df_4h, ob_ratio, funding, spread, vol_spike
 
 def fetch_global_macro_news():
     try:
@@ -162,7 +155,7 @@ def fetch_global_macro_news():
     except Exception:
         return 50
 
-def get_all_market_pairs(limit=80):
+def get_all_market_pairs(limit=70):
     try:
         exchange = ccxt.binance()
         markets = exchange.load_markets()
@@ -171,16 +164,14 @@ def get_all_market_pairs(limit=80):
         return ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT"]
 
 # ==========================================
-# 6. GOD-MODE QUANT ANALYSIS ENGINE
+# 5. ANALYSIS ENGINE
 # ==========================================
 def analyze_coin(symbol, macro_news, ai_db):
     try:
-        df_15m, df_1h, df_4h, ob_ratio, funding, spread = fetch_quantum_market_data(symbol)
+        df_15m, df_1h, df_4h, ob_ratio, funding, spread, vol_spike = fetch_quantum_market_data(symbol)
         close = df_1h['close'].iloc[-1]
         
-        ai_db = neural_reinforcement_learning(symbol, close, ai_db)
-        
-        # Technical Calculations
+        # Technicals
         df_1h['ema9'] = df_1h['close'].ewm(span=9).mean()
         df_1h['ema21'] = df_1h['close'].ewm(span=21).mean()
         
@@ -192,47 +183,25 @@ def analyze_coin(symbol, macro_news, ai_db):
         tr = np.maximum(df_1h['high'] - df_1h['low'], np.maximum(abs(df_1h['high'] - df_1h['close'].shift()), abs(df_1h['low'] - df_1h['close'].shift())))
         atr = tr.rolling(14).mean().iloc[-1]
         
-        # Macro Regime (4H Trend)
-        df_4h['ema50'] = df_4h['close'].ewm(span=50).mean()
-        df_4h['ema200'] = df_4h['close'].ewm(span=200).mean()
-        macro_bull = df_4h['ema50'].iloc[-1] > df_4h['ema200'].iloc[-1]
-        
-        # Sub-Scores
-        tech_score = 50
         rsi = df_1h['rsi'].iloc[-1]
         ema_cross = df_1h['ema9'].iloc[-1] > df_1h['ema21'].iloc[-1]
         
-        if ema_cross: tech_score += 20
+        # Psychology Layer Integration
+        psych_score, psych_tag = analyze_market_psychology(rsi, funding, ob_ratio, vol_spike)
+        
+        tech_score = 60 if ema_cross else 40
         if 40 <= rsi <= 65: tech_score += 15
-        elif rsi < 30: tech_score += 25
         
         futures_score = 50
         if funding < 0: futures_score += 25
         elif funding > 0.06: futures_score -= 20
         if ob_ratio > 1.2: futures_score += 15
         
-        # Run Multi-Agent Debate
-        agent_score = multi_agent_council_debate(tech_score, futures_score, rsi, funding, ob_ratio)
         cmc_score = fetch_cmc_fundamentals(symbol)
-        spread_score = int(50 + (spread * 10))
+        final_score = multi_agent_council_debate(tech_score, futures_score, psych_score)
         
-        signal_type = "LONG 🟢" if ema_cross and macro_bull and agent_score > 50 else "SHORT 🔴"
+        signal_type = "LONG 🟢" if ema_cross and final_score >= 60 else "SHORT 🔴"
         
-        # Neural Matrix Matrix Multiplication Weighting
-        w = ai_db.get("neural_weights", {"tech": 0.30, "futures": 0.25, "agent_debate": 0.20, "cmc": 0.15, "spread": 0.10})
-        neural_offset = ai_db.get("score_offsets", {}).get(symbol, 0)
-        
-        composite = (
-            (tech_score * w["tech"]) + 
-            (futures_score * w["futures"]) + 
-            (agent_score * w["agent_debate"]) + 
-            (cmc_score * w["cmc"]) + 
-            (spread_score * w["spread"]) + 
-            neural_offset
-        )
-        score = max(1, min(99, int(composite)))
-
-        # Dynamic Quantum Risk Management (ATR Dynamic Target & SL)
         if "LONG" in signal_type:
             sl = round(close - (atr * 1.7), 4)
             tp1 = round(close + (atr * 2.8), 4)
@@ -240,70 +209,73 @@ def analyze_coin(symbol, macro_news, ai_db):
             sl = round(close + (atr * 1.7), 4)
             tp1 = round(close - (atr * 2.8), 4)
 
-        ai_db.setdefault("history", {})[symbol] = {
-            "signal": signal_type, "price": close, "tp1": tp1, "sl": sl
-        }
-
         return {
-            "symbol": symbol, "signal": signal_type, "score": score,
-            "price": close, "rsi": round(rsi, 1), "ob_ratio": round(ob_ratio, 2),
+            "symbol": symbol, "signal": signal_type, "score": final_score,
+            "price": close, "rsi": round(rsi, 1), "psych_tag": psych_tag,
             "funding": round(funding, 4), "spread": round(spread, 2),
-            "cmc": cmc_score, "agent_score": agent_score, "sl": sl, "tp1": tp1
-        }, ai_db
-
+            "cmc": cmc_score, "sl": sl, "tp1": tp1
+        }
     except Exception as e:
-        print(f"Skipping {symbol} due to anomaly: {e}")
-        return None, ai_db
+        return None
 
 # ==========================================
-# 7. TELEGRAM GOD-MODE DISPATCHER
+# 6. TELEGRAM 24/7 STREAMING DISPATCHER
 # ==========================================
-def send_god_mode_telegram(data):
+def send_telegram_alert(data):
     token, chat_id = os.getenv("TELEGRAM_BOT_TOKEN"), os.getenv("TELEGRAM_CHAT_ID")
     if not token or not chat_id: return
 
-    score = data['score']
-    tier = "🌌 GOD-MODE ALPHA" if score >= 80 else ("🔥 HIGH CONVICTION" if score >= 65 else "⚖️ NEUTRAL/WATCH")
-
     msg = (
-        f"⚡ *GOD-MODE QUANTUM MASTER AI* ⚡\n"
+        f"🌌 *24/7 GOD-MODE PSYCHOLOGY ALERT* 🌌\n"
         f"━━━━━━━━━━━━━━━━━━━\n"
         f"📌 *Asset:* `{data['symbol']}` | Verdict: *{data['signal']}*\n"
-        f"📊 *Quantum Score:* `{score}/100` | Tier: {tier}\n\n"
+        f"📊 *Quantum Score:* `{data['score']}/100`\n\n"
         f"💵 *Price:* `${data['price']}`\n"
-        f"🤖 *AI Agent Council Score:* `{data['agent_score']}/100`\n"
+        f"🧠 *Market Psychology:* {data['psych_tag']}\n"
         f"⚡ *Funding Rate:* `{data['funding']}%`\n"
-        f"🔄 *Exchanges Spread:* `{data['spread']}%`\n"
-        f"🏛️ *CMC Fundamental:* `{data['cmc']}/100`\n"
-        f"📈 *RSI:* `{data['rsi']}` | *Buy Wall:* `{data['ob_ratio']}`\n\n"
-        f"🎯 *Take Profit 1:* `${data['tp1']}`\n"
-        f"🛡️ *Dynamic Stop Loss:* `${data['sl']}`\n"
-        f"⏰ *Scan Time:* {datetime.utcnow().strftime('%H:%M UTC')}\n"
+        f"🔄 *Spread:* `{data['spread']}%` | *RSI:* `{data['rsi']}`\n\n"
+        f"🎯 *Take Profit:* `${data['tp1']}`\n"
+        f"🛡️ *Stop Loss:* `${data['sl']}`\n"
+        f"⏰ *Time:* {datetime.utcnow().strftime('%H:%M UTC')}\n"
         f"━━━━━━━━━━━━━━━━━━━"
     )
-    requests.post(f"https://api.telegram.org/bot{token}/sendMessage", json={"chat_id": chat_id, "text": msg, "parse_mode": "Markdown"}, timeout=10)
+    try:
+        requests.post(f"https://api.telegram.org/bot{token}/sendMessage", json={"chat_id": chat_id, "text": msg, "parse_mode": "Markdown"}, timeout=10)
+    except Exception:
+        pass
 
 # ==========================================
-# 8. EXECUTION PIPELINE
+# 7. 24/7 CONTINUOUS STREAMING LOOP
 # ==========================================
 if __name__ == "__main__":
-    ai_db = load_ai_neural_matrix()
-    pairs = get_all_market_pairs(limit=80)
-    macro_news = fetch_global_macro_news()
-    results = []
+    print("🔄 Starting 24/7 Autonomous God-Mode Psychology Streamer...")
+    alerted_history = load_json_db(ALERTED_HISTORY_FILE, {})
+    ai_db = load_json_db(LEARNING_FILE, {"weights": {}})
 
-    print("🌌 Initializing God-Mode Autonomous Quantum Pipeline...")
-    for pair in pairs:
-        res, ai_db = analyze_coin(pair, macro_news, ai_db)
-        if res: results.append(res)
+    while True:
+        try:
+            pairs = get_all_market_pairs(limit=70)
+            macro_news = fetch_global_macro_news()
+            print(f"🔍 Scanning {len(pairs)} assets at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC...")
 
-    save_ai_neural_matrix(ai_db)
+            for pair in pairs:
+                res = analyze_coin(pair, macro_news, ai_db)
+                if res and res['score'] >= 78:  # Strict High-Conviction Threshold for 24/7 Alerts
+                    symbol = res['symbol']
+                    last_alert_time = alerted_history.get(symbol, 0)
+                    current_time = time.time()
+                    
+                    # Cooldown mechanism: Don't spam the same coin within 4 hours
+                    if current_time - last_alert_time > 14400:
+                        print(f"🔥 Elite Setup Detected! Sending alert for {symbol} (Score: {res['score']})")
+                        send_telegram_alert(res)
+                        alerted_history[symbol] = current_time
+                        save_json_db(ALERTED_HISTORY_FILE, alerted_history)
+                        time.sleep(3) # Prevent telegram rate limits
 
-    if results:
-        results = sorted(results, key=lambda x: x['score'], reverse=True)
-        pd.DataFrame(results).to_csv("crypto_scan_results.csv", index=False)
-        print("💾 Quantum State & CSV Artifact Saved.")
-
-        print("📲 Broadcasting God-Mode Signals to Telegram...")
-        for coin in results[:10]:
-            send_god_mode_telegram(coin)
+            print("💤 Scan cycle complete. Sleeping for 20 minutes before next market pulse...")
+            time.sleep(1200) # Sleep 20 minutes between full market scans
+            
+        except Exception as e:
+            print(f"⚠️ Loop Exception caught: {e}. Recovering in 60 seconds...")
+            time.sleep(60)
