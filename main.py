@@ -8,221 +8,284 @@ import feedparser
 from datetime import datetime
 
 # ==========================================
-# 1. EXCLUDED STABLECOINS & FIAT LIST
+# 1. STABLECOINS & FIAT EXCLUSION FILTER
 # ==========================================
 EXCLUDED_STABLES = [
     'USDT', 'USDC', 'FDUSD', 'DAI', 'TUSD', 'USDE', 'USDD', 
-    'EUR', 'GBP', 'BUSD', 'PYUSD', 'USDP', 'GUSD', 'AEUR', 'TUSD'
+    'EUR', 'GBP', 'BUSD', 'PYUSD', 'USDP', 'GUSD', 'AEUR'
 ]
 
 def is_stablecoin(symbol):
-    """Check if the pair contains any stablecoin base currency"""
     base = symbol.split('/')[0].split(':')[0].upper()
     return base in EXCLUDED_STABLES
 
 # ==========================================
-# 2. FETCH ALL ACTIVE CRYPTO MARKET PAIRS
+# 2. ADVANCED QUANT SELF-LEARNING ENGINE
 # ==========================================
-def fetch_all_market_pairs(limit_market=100):
-    """Fetch all active USDT trading pairs from Exchange dynamically"""
+LEARNING_FILE = "ai_learning_data.json"
+
+def load_ai_database():
+    if os.path.exists(LEARNING_FILE):
+        try:
+            with open(LEARNING_FILE, "r") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {
+        "weights": {"tech": 0.35, "futures": 0.25, "news": 0.15, "cmc": 0.15, "spread": 0.10},
+        "score_offsets": {},
+        "history": {}
+    }
+
+def save_ai_database(data):
     try:
-        exchange = ccxt.binance()
-        markets = exchange.load_markets()
-        
-        usdt_pairs = []
-        for symbol, market in markets.items():
-            if market['active'] and market['quote'] == 'USDT' and market['spot']:
-                if not is_stablecoin(symbol):
-                    usdt_pairs.append(symbol)
-                    
-        print(f"Total non-stablecoin crypto pairs discovered: {len(usdt_pairs)}")
-        # Scan top active volume coins up to limit
-        return usdt_pairs[:limit_market]
+        with open(LEARNING_FILE, "w") as f:
+            json.dump(data, f, indent=4)
     except Exception as e:
-        print(f"Error fetching markets: {e}")
-        # Fallback list if exchange network call limits
-        return ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT", "ADA/USDT", "AVAX/USDT", "DOGE/USDT", "NEAR/USDT", "LINK/USDT"]
+        print(f"Error saving AI database: {e}")
 
-# ==========================================
-# 3. DATA FETCHERS (A to Z MARKET DATA)
-# ==========================================
-def fetch_binance_data(symbol, timeframe="1h", limit=100):
-    """Fetch OHLCV & Order Book Pressure from Exchange"""
-    exchange = ccxt.binance()
-    ohlcv = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
-    df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+def tune_ai_weights(symbol, current_price, ai_db):
+    history = ai_db.get("history", {})
+    offsets = ai_db.get("score_offsets", {})
     
-    try:
-        order_book = exchange.fetch_order_book(symbol, limit=20)
-        bids_vol = sum([bid[1] for bid in order_book['bids']])
-        asks_vol = sum([ask[1] for ask in order_book['asks']])
-        order_book_ratio = bids_vol / (asks_vol + 1e-9)
-    except Exception:
-        order_book_ratio = 1.0
-
-    return df, order_book_ratio
-
-def fetch_crypto_news_sentiment():
-    """Scan Live Crypto News RSS Feed"""
-    try:
-        feed_url = "https://cointelegraph.com/rss"
-        feed = feedparser.parse(feed_url)
-        bullish_keywords = ['bull', 'surge', 'breakout', 'rally', 'adoption', 'approval', 'gain']
-        bearish_keywords = ['bear', 'crash', 'drop', 'hack', 'sec', 'ban', 'decline']
+    if symbol in history:
+        last = history[symbol]
+        tp1, sl = last.get("tp1", 0), last.get("sl", 0)
+        signal = last.get("signal", "LONG")
         
-        sentiment_score = 50
+        if signal == "LONG 🟢":
+            if tp1 > 0 and current_price >= tp1:
+                offsets[symbol] = min(25, offsets.get(symbol, 0) + 5)
+            elif sl > 0 and current_price <= sl:
+                offsets[symbol] = max(-25, offsets.get(symbol, 0) - 5)
+        else: # SHORT
+            if tp1 > 0 and current_price <= tp1:
+                offsets[symbol] = min(25, offsets.get(symbol, 0) + 5)
+            elif sl > 0 and current_price >= sl:
+                offsets[symbol] = max(-25, offsets.get(symbol, 0) - 5)
+
+    ai_db["score_offsets"] = offsets
+    return ai_db
+
+# ==========================================
+# 3. FUNDAMENTALS (COINMARKETCAP API)
+# ==========================================
+def fetch_cmc_fundamentals(symbol):
+    api_key = os.getenv("CMC_API_KEY")
+    if not api_key:
+        return 50
+    clean_symbol = symbol.split('/')[0].upper()
+    url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+    headers = {"X-CMC_PRO_API_KEY": api_key}
+    try:
+        res = requests.get(url, headers=headers, params={"symbol": clean_symbol}, timeout=5)
+        if res.status_code == 200:
+            rank = res.json()["data"][clean_symbol][0].get("cmc_rank", 500)
+            if rank <= 15: return 95
+            elif rank <= 50: return 80
+            elif rank <= 150: return 65
+            return 45
+    except Exception:
+        pass
+    return 50
+
+# ==========================================
+# 4. MULTI-EXCHANGE & DEEP MARKET DATA
+# ==========================================
+def fetch_deep_market_data(symbol):
+    exchange_binance = ccxt.binance()
+    exchange_bybit = ccxt.bybit()
+    
+    # 1. Multi-Timeframe Candles (15m, 1h, 4h)
+    df_15m = pd.DataFrame(exchange_binance.fetch_ohlcv(symbol, timeframe="15m", limit=50), columns=['t', 'o', 'h', 'l', 'c', 'v'])
+    df_1h = pd.DataFrame(exchange_binance.fetch_ohlcv(symbol, timeframe="1h", limit=100), columns=['t', 'o', 'h', 'l', 'c', 'v'])
+    df_4h = pd.DataFrame(exchange_binance.fetch_ohlcv(symbol, timeframe="4h", limit=50), columns=['t', 'o', 'h', 'l', 'c', 'v'])
+    
+    # 2. Cross-Exchange Price Spread (Binance vs Bybit arbitrage check)
+    price_spread = 0.0
+    try:
+        ticker_b = exchange_binance.fetch_ticker(symbol)
+        ticker_by = exchange_bybit.fetch_ticker(symbol)
+        price_spread = ((ticker_by['last'] - ticker_b['last']) / ticker_b['last']) * 100
+    except Exception:
+        pass
+
+    # 3. Orderbook Wall & Funding Rates
+    ob_ratio = 1.0
+    try:
+        ob = exchange_binance.fetch_order_book(symbol, limit=20)
+        bids = sum([b[1] for b in ob['bids']])
+        asks = sum([a[1] for a[1] for a in ob['asks']])
+        ob_ratio = bids / (asks + 1e-9)
+    except Exception:
+        pass
+
+    funding_rate = 0.01
+    try:
+        fr = exchange_binance.fetch_funding_rate(symbol)
+        funding_rate = fr.get('fundingRate', 0.01) * 100
+    except Exception:
+        pass
+
+    return df_15m, df_1h, df_4h, ob_ratio, funding_rate, price_spread
+
+def fetch_news_sentiment():
+    try:
+        feed = feedparser.parse("https://cointelegraph.com/rss")
+        bull = ['bull', 'surge', 'breakout', 'rally', 'adoption', 'approval', 'gain']
+        bear = ['bear', 'crash', 'drop', 'hack', 'sec', 'ban', 'decline']
+        score = 50
         for entry in feed.entries[:10]:
             title = entry.title.lower()
-            if any(w in title for w in bullish_keywords):
-                sentiment_score += 5
-            if any(w in title for w in bearish_keywords):
-                sentiment_score -= 5
-                
-        return max(0, min(100, sentiment_score))
+            if any(w in title for w in bull): score += 5
+            if any(w in title for w in bear): score -= 5
+        return max(0, min(100, score))
     except Exception:
         return 50
 
-def get_ai_learning_offset(symbol):
-    """Retrieve self-learning performance adjustment"""
-    file_path = "ai_learning_data.json"
-    if os.path.exists(file_path):
-        try:
-            with open(file_path, "r") as f:
-                data = json.load(f)
-                return data.get("score_offsets", {}).get(symbol, 0)
-        except Exception:
-            return 0
-    return 0
-
-# ==========================================
-# 4. ANALYSIS ENGINE
-# ==========================================
-def analyze_coin(symbol, global_news_score):
+def get_all_market_pairs(limit=80):
     try:
-        df, ob_ratio = fetch_binance_data(symbol)
-        close = df['close'].iloc[-1]
+        exchange = ccxt.binance()
+        markets = exchange.load_markets()
+        pairs = []
+        for sym, m in markets.items():
+            if m['active'] and m['quote'] == 'USDT' and m['spot']:
+                if not is_stablecoin(sym):
+                    pairs.append(sym)
+        return pairs[:limit]
+    except Exception:
+        return ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT"]
+
+# ==========================================
+# 5. QUANT ENGINE & ANALYSIS
+# ==========================================
+def analyze_coin(symbol, global_news, ai_db):
+    try:
+        df_15m, df_1h, df_4h, ob_ratio, funding_rate, price_spread = fetch_deep_market_data(symbol)
+        close = df_1h['close'].iloc[-1]
         
-        # EMA
-        df['ema9'] = df['close'].ewm(span=9, adjust=False).mean()
-        df['ema21'] = df['close'].ewm(span=21, adjust=False).mean()
+        ai_db = tune_ai_weights(symbol, close, ai_db)
         
-        # RSI
-        delta = df['close'].diff()
-        gain = (delta.where(delta > 0, 0)).rolling(14).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
-        rs = gain / (loss + 1e-9)
-        df['rsi'] = 100 - (100 / (1 + rs))
+        # Indicators (1H & 15M)
+        df_1h['ema9'] = df_1h['close'].ewm(span=9).mean()
+        df_1h['ema21'] = df_1h['close'].ewm(span=21).mean()
         
-        # ATR
-        df['tr'] = np.maximum(
-            df['high'] - df['low'],
-            np.maximum(abs(df['high'] - df['close'].shift(1)), abs(df['low'] - df['close'].shift(1)))
-        )
-        atr = df['tr'].rolling(14).mean().iloc[-1]
+        delta = df_1h['close'].diff()
+        gain = delta.clip(lower=0).rolling(14).mean()
+        loss = (-delta.clip(upper=0)).rolling(14).mean()
+        df_1h['rsi'] = 100 - (100 / (1 + (gain / (loss + 1e-9))))
         
-        # Score Engine
+        tr = np.maximum(df_1h['high'] - df_1h['low'], np.maximum(abs(df_1h['high'] - df_1h['close'].shift()), abs(df_1h['low'] - df_1h['close'].shift())))
+        atr = tr.rolling(14).mean().iloc[-1]
+        
+        # Multi-TF Macro Regime (4H)
+        df_4h['ema50'] = df_4h['close'].ewm(span=50).mean()
+        df_4h['ema200'] = df_4h['close'].ewm(span=200).mean()
+        macro_bull = df_4h['ema50'].iloc[-1] > df_4h['ema200'].iloc[-1]
+        
+        # Scoring Modules
         tech_score = 50
-        rsi_val = df['rsi'].iloc[-1]
+        rsi = df_1h['rsi'].iloc[-1]
+        ema_cross = df_1h['ema9'].iloc[-1] > df_1h['ema21'].iloc[-1]
         
-        if df['ema9'].iloc[-1] > df['ema21'].iloc[-1]: tech_score += 15
-        if 40 <= rsi_val <= 65: tech_score += 15
-        elif rsi_val < 30: tech_score += 20 # Oversold Bonus
-        if ob_ratio > 1.2: tech_score += 10 # Buy wall advantage
+        if ema_cross: tech_score += 20
+        if 40 <= rsi <= 65: tech_score += 15
+        elif rsi < 30: tech_score += 25
+        
+        futures_score = 50
+        if funding_rate < 0: futures_score += 25
+        elif funding_rate > 0.05: futures_score -= 15
+        if ob_ratio > 1.2: futures_score += 15
+        
+        cmc_score = fetch_cmc_fundamentals(symbol)
+        spread_score = int(50 + (price_spread * 10)) # Arbitrage weight adjustment
+        
+        signal_type = "LONG 🟢" if ema_cross and macro_bull else "SHORT 🔴"
+        
+        w = ai_db.get("weights", {"tech": 0.35, "futures": 0.25, "news": 0.15, "cmc": 0.15, "spread": 0.10})
+        offset = ai_db.get("score_offsets", {}).get(symbol, 0)
+        
+        composite = (
+            (tech_score * w["tech"]) + 
+            (futures_score * w["futures"]) + 
+            (global_news * w["news"]) + 
+            (cmc_score * w["cmc"]) + 
+            (spread_score * w["spread"]) + 
+            offset
+        )
+        score = max(1, min(99, int(composite)))
 
-        ai_offset = get_ai_learning_offset(symbol)
-        final_score = int((tech_score * 0.6) + (global_news_score * 0.4) + ai_offset)
-        final_score = max(1, min(99, final_score))
+        # Dynamic Kelly Risk / SL & TP
+        if signal_type == "LONG 🟢":
+            sl = round(close - (atr * 1.8), 4)
+            tp1 = round(close + (atr * 2.8), 4)
+        else:
+            sl = round(close + (atr * 1.8), 4)
+            tp1 = round(close - (atr * 2.8), 4)
 
-        sl = round(close - (atr * 1.5), 4)
-        tp1 = round(close + (atr * 2.0), 4)
+        ai_db.setdefault("history", {})[symbol] = {
+            "signal": signal_type, "price": close, "tp1": tp1, "sl": sl
+        }
 
         return {
-            "symbol": symbol,
-            "score": final_score,
-            "price": close,
-            "rsi": round(rsi_val, 1),
-            "ob_ratio": round(ob_ratio, 2),
-            "news_score": global_news_score,
-            "sl": sl,
-            "tp1": tp1
-        }
+            "symbol": symbol, "signal": signal_type, "score": score,
+            "price": close, "rsi": round(rsi, 1), "ob_ratio": round(ob_ratio, 2),
+            "funding": round(funding_rate, 4), "spread": round(price_spread, 2),
+            "cmc": cmc_score, "news": global_news, "sl": sl, "tp1": tp1
+        }, ai_db
+
     except Exception as e:
-        print(f"Skipping {symbol} due to scan error: {e}")
-        return None
+        print(f"Error scanning {symbol}: {e}")
+        return None, ai_db
 
 # ==========================================
-# 5. TELEGRAM ALERT DISPATCHER
+# 6. TELEGRAM ALERT SYSTEM
 # ==========================================
-def send_telegram_report(coin_data):
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-    chat_id = os.getenv("TELEGRAM_CHAT_ID")
-    
-    if not bot_token or not chat_id:
-        print("Telegram Secrets Missing!")
-        return
+def send_telegram(data):
+    token, chat_id = os.getenv("TELEGRAM_BOT_TOKEN"), os.getenv("TELEGRAM_CHAT_ID")
+    if not token or not chat_id: return
 
-    score = coin_data['score']
-    if score >= 70:
-        status = "🟢 STRONG BUY (High Potential)"
-    elif score >= 50:
-        status = "🟡 NEUTRAL / WATCHLIST"
-    else:
-        status = "🔴 LOW SCORE / AVOID"
+    score = data['score']
+    status = "🔥 ELITE SETUP" if score >= 75 else ("⚖️ WATCHLIST" if score >= 50 else "⚠️ AVOID")
 
-    message = (
-        f"🤖 *MASTER AI 360° SCAN REPORT*\n"
+    msg = (
+        f"🌌 *QUANTUM QUANT MASTER AI REPORT*\n"
         f"━━━━━━━━━━━━━━━━━━━\n"
-        f"📌 *Coin:* `{coin_data['symbol']}`\n"
-        f"📊 *Master AI Score:* `{score}/100`\n"
-        f"🚦 *Status:* {status}\n\n"
-        f"💵 *Current Price:* `${coin_data['price']}`\n"
-        f"📈 *RSI Level:* `{coin_data['rsi']}`\n"
-        f"⚖️ *Buy/Sell Wall Ratio:* `{coin_data['ob_ratio']}`\n"
-        f"📰 *News Sentiment:* `{coin_data['news_score']}/100`\n\n"
-        f"🎯 *Take Profit 1:* `${coin_data['tp1']}`\n"
-        f"🛡️ *Stop Loss:* `${coin_data['sl']}`\n"
-        f"⏰ *Scan Time:* {datetime.utcnow().strftime('%H:%M UTC')}\n"
+        f"📌 *Asset:* `{data['symbol']}` | Action: *{data['signal']}*\n"
+        f"📊 *Master Score:* `{score}/100` | Status: {status}\n\n"
+        f"💵 *Price:* `${data['price']}`\n"
+        f"⚡ *Funding Rate:* `{data['funding']}%`\n"
+        f"🔄 *Exchanges Spread:* `{data['spread']}%`\n"
+        f"🏛️ *CMC Fund Score:* `{data['cmc']}/100`\n"
+        f"📈 *RSI:* `{data['rsi']}` | *Buy Wall:* `{data['ob_ratio']}`\n\n"
+        f"🎯 *Take Profit 1:* `${data['tp1']}`\n"
+        f"🛡️ *Dynamic Stop Loss:* `${data['sl']}`\n"
+        f"⏰ *Time:* {datetime.utcnow().strftime('%H:%M UTC')}\n"
         f"━━━━━━━━━━━━━━━━━━━"
     )
-
-    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-    payload = {
-        "chat_id": chat_id,
-        "text": message,
-        "parse_mode": "Markdown"
-    }
-    try:
-        requests.post(url, json=payload, timeout=10)
-    except Exception as e:
-        print(f"Telegram post error: {e}")
+    requests.post(f"https://api.telegram.org/bot{token}/sendMessage", json={"chat_id": chat_id, "text": msg, "parse_mode": "Markdown"}, timeout=10)
 
 # ==========================================
-# 6. MAIN EXECUTION LOOP
+# 7. MAIN PIPELINE
 # ==========================================
 if __name__ == "__main__":
-    print("Fetching entire crypto market pairs...")
-    # Full Market Fetch (Scans top 80 market dynamic coins excluding all stables)
-    all_pairs = fetch_all_market_pairs(limit_market=80)
-    
-    global_news = fetch_crypto_news_sentiment()
+    ai_db = load_ai_database()
+    pairs = get_all_market_pairs(limit=80)
+    news = fetch_news_sentiment()
     results = []
 
-    print(f"Scanning market coins...")
-    for pair in all_pairs:
-        res = analyze_coin(pair, global_news)
-        if res:
-            results.append(res)
+    print("🚀 Initializing Quantum Multi-Exchange Pipeline...")
+    for pair in pairs:
+        res, ai_db = analyze_coin(pair, news, ai_db)
+        if res: results.append(res)
+
+    save_ai_database(ai_db)
 
     if results:
-        # Sort results by Master AI Score in descending order
         results = sorted(results, key=lambda x: x['score'], reverse=True)
-        
-        # Save complete market CSV artifact
-        df_out = pd.DataFrame(results)
-        df_out.to_csv("crypto_scan_results.csv", index=False)
-        print("Market CSV Saved successfully.")
+        pd.DataFrame(results).to_csv("crypto_scan_results.csv", index=False)
+        print("💾 Artifact CSV Saved.")
 
-        # Send Telegram updates for Top Analyzed Coins
-        print("Broadcasting Telegram Alerts for Scanned Coins...")
-        for top_coin in results[:10]: # Top 10 High/Low Ranked Signals broadcasted
-            send_telegram_report(top_coin)
+        print("📲 Broadcasting Elite Telegram Signals...")
+        for coin in results[:10]:
+            send_telegram(coin)
