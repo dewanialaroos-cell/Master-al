@@ -1,4 +1,22 @@
 import os
+import requests
+
+# --- IMMEDIATE TELEGRAM CONNECTION TEST ---
+def test_telegram_connection():
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID")
+    if token and chat_id:
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = {"chat_id": chat_id, "text": "🤖 AI Scanner Connection Test: Bot is successfully linked!", "parse_mode": "Markdown"}
+        try:
+            res = requests.post(url, json=payload, timeout=5)
+            print("Telegram Test Response:", res.json())
+        except Exception as e:
+            print("Telegram Test Error:", e)
+
+test_telegram_connection()
+
+import os
 import time
 import requests
 import json
