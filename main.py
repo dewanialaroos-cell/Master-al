@@ -263,37 +263,35 @@ def send_telegram_alert(data):
         pass
 
 # ==========================================
-# 7. 24/7 CONTINUOUS STREAMING LOOP
+# 7. SINGLE-RUN EXECUTION (Triggered by 15-min Cron)
 # ==========================================
 if __name__ == "__main__":
-    print("🔄 Starting 24/7 Autonomous God-Mode Psychology Streamer...")
+    print("🔄 Starting God-Mode Psychology Market Scan...")
     alerted_history = load_json_db(ALERTED_HISTORY_FILE, {})
     ai_db = load_json_db(LEARNING_FILE, {"weights": {}})
 
-    while True:
-        try:
-            pairs = get_all_market_pairs(limit=70)
-            macro_news = fetch_global_macro_news()
-            print(f"🔍 Scanning {len(pairs)} assets at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC...")
+    try:
+        pairs = get_all_market_pairs(limit=70)
+        macro_news = fetch_global_macro_news()
+        print(f"🔍 Scanning {len(pairs)} assets at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC...")
 
-            for pair in pairs:
-                res = analyze_coin(pair, macro_news, ai_db)
-                if res:  # Strict High-Conviction Threshold for 24/7 Alerts
-                    symbol = res['symbol']
-                    last_alert_time = alerted_history.get(symbol, 0)
-                    current_time = time.time()
-                    
-                    # Cooldown mechanism: Don't spam the same coin within 4 hours
-                    if current_time - last_alert_time > 14400:
-                        print(f"🔥 Elite Setup Detected! Sending alert for {symbol} (Score: {res['score']})")
-                        send_telegram_alert(res)
-                        alerted_history[symbol] = current_time
-                        save_json_db(ALERTED_HISTORY_FILE, alerted_history)
-                        time.sleep(3) # Prevent telegram rate limits
+        for pair in pairs:
+            res = analyze_coin(pair, macro_news, ai_db)
+            if res:  # Agar koi bhi valid setup mila
+                symbol = res['symbol']
+                last_alert_time = alerted_history.get(symbol, 0)
+                current_time = time.time()
+                
+                # Cooldown mechanism: Don't spam the same coin within 4 hours
+                if current_time - last_alert_time > 14400:
+                    print(f"🔥 Setup Detected! Sending alert for {symbol} (Score: {res['score']})")
+                    send_telegram_alert(res)
+                    alerted_history[symbol] = current_time
+                    save_json_db(ALERTED_HISTORY_FILE, alerted_history)
+                    time.sleep(2) # Prevent telegram rate limits
 
-            print("💤 Scan cycle complete. Sleeping for 20 minutes before next market pulse...")
-            time.sleep(1200) # Sleep 20 minutes between full market scans
-            
-        except Exception as e:
-            print(f"⚠️ Loop Exception caught: {e}. Recovering in 60 seconds...")
-            time.sleep(60)
+        print("✅ Scan cycle complete successfully.")
+        
+    except Exception as e:
+        print(f"⚠️ Exception caught: {e}")
+        
