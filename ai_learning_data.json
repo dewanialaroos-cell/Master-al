@@ -1691,6 +1691,42 @@
             "take_profit": 177.377686,
             "timestamp": "2026-09-23T10:11:42.175778+00:00",
             "status": "PENDING"
+        },
+        {
+            "symbol": "ZEC/USDT",
+            "signal": "LONG",
+            "entry_price": 1629.39,
+            "stop_loss": 1481.220003,
+            "take_profit": 2103.533991,
+            "timestamp": "2026-09-23T12:14:51.284205+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "NEAR/USDT",
+            "signal": "LONG",
+            "entry_price": 4.754,
+            "stop_loss": 4.155296,
+            "take_profit": 6.669854,
+            "timestamp": "2026-09-23T12:14:51.550877+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "BCH/USDT",
+            "signal": "LONG",
+            "entry_price": 343.7,
+            "stop_loss": 317.088515,
+            "take_profit": 402.245267,
+            "timestamp": "2026-09-23T12:14:51.688904+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "ARB/USDT",
+            "signal": "LONG",
+            "entry_price": 0.23623,
+            "stop_loss": 0.211804,
+            "take_profit": 0.314392,
+            "timestamp": "2026-09-23T12:14:52.204248+00:00",
+            "status": "PENDING"
         }
     ],
     "stats": {
