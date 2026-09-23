@@ -1628,6 +1628,69 @@
             "take_profit": 0.293835,
             "timestamp": "2026-09-23T08:12:31.308538+00:00",
             "status": "PENDING"
+        },
+        {
+            "symbol": "UNI/USDT",
+            "signal": "LONG",
+            "entry_price": 10.11,
+            "stop_loss": 8.797882,
+            "take_profit": 14.308778,
+            "timestamp": "2026-09-23T10:11:39.329237+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "ZEC/USDT",
+            "signal": "LONG",
+            "entry_price": 1621.92,
+            "stop_loss": 1483.902351,
+            "take_profit": 1925.558827,
+            "timestamp": "2026-09-23T10:11:39.537271+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "NEAR/USDT",
+            "signal": "LONG",
+            "entry_price": 4.516,
+            "stop_loss": 4.160907,
+            "take_profit": 5.652297,
+            "timestamp": "2026-09-23T10:11:39.935973+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "BCH/USDT",
+            "signal": "LONG",
+            "entry_price": 362.3,
+            "stop_loss": 312.664977,
+            "take_profit": 521.132074,
+            "timestamp": "2026-09-23T10:11:40.136766+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "ARB/USDT",
+            "signal": "LONG",
+            "entry_price": 0.23878,
+            "stop_loss": 0.209268,
+            "take_profit": 0.333219,
+            "timestamp": "2026-09-23T10:11:40.955834+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "AVAX/USDT",
+            "signal": "LONG",
+            "entry_price": 11.169,
+            "stop_loss": 10.818492,
+            "take_profit": 12.290627,
+            "timestamp": "2026-09-23T10:11:41.589881+00:00",
+            "status": "PENDING"
+        },
+        {
+            "symbol": "AAVE/USDT",
+            "signal": "LONG",
+            "entry_price": 149.41,
+            "stop_loss": 140.670098,
+            "take_profit": 177.377686,
+            "timestamp": "2026-09-23T10:11:42.175778+00:00",
+            "status": "PENDING"
         }
     ],
     "stats": {
