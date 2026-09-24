@@ -2,8 +2,11 @@ name: Run Crypto Master AI Scanner
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Har 15 minute baad automatically run hoga
-  workflow_dispatch:        # Manual run button ke liye
+    on:
+  schedule:
+    - cron: '*/5 * * * *'  # Ab yeh har 5 minute baad khud ba khud run hoga
+  workflow_dispatch:
+  # Manual run button ke liye
 
 jobs:
   build:
