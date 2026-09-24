@@ -19,7 +19,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install ccxt pandas numpy requests feedparser
+          pip install ccxt pandas numpy scikit-learn requests feedparser
+        
 
       - name: Run God-Mode Scanner
         env:
