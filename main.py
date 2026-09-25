@@ -66,7 +66,6 @@ def apply_swarm_genetic_feedback(ai_mind, outcome_success):
         stats["total_losses"] += 1
         stats["evolution_score"] = max(50, stats["evolution_score"] - 5)
         ai_mind["generation"] += 1
-        # Swarm Mutation Adaptation on Loss
         for key in weights:
             mutation_delta = np.random.uniform(-ai_mind["mutation_rate"], ai_mind["mutation_rate"])
             weights[key] = max(0.05, min(0.5, weights[key] + mutation_delta))
@@ -101,9 +100,6 @@ def predict_machine_learning_edge(ai_mind, current_features):
 # 3. LEVEL-3 ORDER BOOK IMBALANCE ENGINE
 # ==========================================
 async def analyze_order_book_depth(exchange, symbol):
-    """
-    Scans live exchange order book bids vs asks volume walls to detect institutional accumulation.
-    """
     try:
         order_book = await exchange.fetch_order_book(symbol, limit=20)
         bids = order_book.get('bids', [])
@@ -201,35 +197,8 @@ def quantum_timeframe_matrix(df_15m, df_1h, df_4h):
         return "NEUTRAL_MIXED"
 
 # ==========================================
-# 6. TELEGRAM COMMANDS & DISPATCHER
+# 6. TELEGRAM SIGNAL DISPATCHER ONLY
 # ==========================================
-def poll_telegram_commands(ai_mind):
-    token = os.getenv("TELEGRAM_BOT_TOKEN")
-    chat_id = os.getenv("TELEGRAM_CHAT_ID")
-    if not token or not chat_id: return
-
-    try:
-        url = f"https://api.telegram.org/bot{token}/getUpdates?offset=-1"
-        res = requests.get(url, timeout=3).json()
-        if res.get("ok") and res.get("result"):
-            update = res["result"][-1]
-            message = update.get("message", {})
-            text = message.get("text", "").strip().lower()
-            sender_chat = str(message.get("chat", {}).get("id", ""))
-
-            if sender_chat == str(chat_id) and text == "/status":
-                stats = ai_mind.get("neural_memory_stats", {})
-                reply = (
-                    f"👑 *GOD-TIER SWARM SUPERINTELLIGENCE* 👑\n"
-                    f"🧬 Generation: `v{ai_mind['generation']}`\n"
-                    f"🏆 Evolution Score: `{stats.get('evolution_score', 100)}`\n"
-                    f"🧠 Order Book & LSTM Core: `Active & Autonomous`\n"
-                    f"✅ Wins: `{stats.get('total_wins', 0)}` | Losses: `{stats.get('total_losses', 0)}`"
-                )
-                requests.post(f"https://api.telegram.org/bot{token}/sendMessage", json={"chat_id": chat_id, "text": reply, "parse_mode": "Markdown"})
-    except Exception:
-        pass
-
 def send_telegram_alert(data):
     token, chat_id = os.getenv("TELEGRAM_BOT_TOKEN"), os.getenv("TELEGRAM_CHAT_ID")
     if not token or not chat_id: return
@@ -276,7 +245,6 @@ async def async_quantum_market_daemon():
 
     while True:
         try:
-            poll_telegram_commands(ai_mind)
             macro_news, sentiment_score = scan_omniscient_macro_and_sentiment()
             print(f"🔄 Executing Order Book Depth + Swarm Scan at {datetime.utcnow().strftime('%H:%M:%S UTC')}...")
 
@@ -367,11 +335,11 @@ async def async_quantum_market_daemon():
                     continue
 
             print("💤 Cycle complete. Monitoring live Order Book Swarm stream...")
-            await asyncio.sleep(300)
+            break # GitHub actions ke liye aik dafa scan karke exit hona behtar hai taake cron loop na phanse
 
         except Exception as e:
             print(f"⚠️ Daemon Exception: {e}")
-            await asyncio.sleep(10)
+            break
 
     await exchange.close()
 
