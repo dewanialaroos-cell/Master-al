@@ -37,8 +37,10 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git status
           # Check if files exist before adding to avoid pathspec errors
-          if [ -f ai_quantum_mind.json ]; then git add ai_quantum_mind.json; fi
-          if [ -f alerted_history.json ]; then git add alerted_history.json; fi
+                    # Force add use karein taake files lazmi commit ho jayein
+          git add -f ai_quantum_mind.json
+          git add -f alerted_history.json
           git diff --quiet && git diff --staged --quiet || git commit -m "🤖 AI Self-Learning Memory Update [skip ci]"
+          
           git push || true
           
