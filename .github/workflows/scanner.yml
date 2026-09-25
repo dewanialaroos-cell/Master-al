@@ -26,20 +26,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run AI Quant Scanner Daemon
+      - name: Run AI Quant Scanner Daemon and Auto-Commit
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python main.py
-
-            - name: Auto-Commit AI Neural Memory Updates
-        run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git status
           git add ai_quantum_mind.json alerted_history.json || true
           git diff --quiet && git diff --staged --quiet || git commit -m "🤖 AI Self-Learning Memory Update [skip ci]"
           git push || true
-          
