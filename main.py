@@ -42,59 +42,51 @@ def save_json_db(filename, data):
         print(f"Database Sync Error ({filename}): {e}")
 
 # ==========================================
-# 2. SWARM INTELLIGENCE & GENETIC MIND
+# 2. CONTINUOUS LEARNING SWARM MIND
 # ==========================================
 def get_quantum_ai_mind():
     default_mind = {
         "generation": 1,
         "weights": {"tech": 0.20, "orderbook": 0.20, "sentiment": 0.20, "deep_lstm": 0.20, "psych": 0.20},
         "mutation_rate": 0.015,
-        "active_signals": {},
         "historical_dataset": [],
-        "neural_memory_stats": {"total_wins": 0, "total_losses": 0, "evolution_score": 100}
+        "neural_memory_stats": {"total_scans": 0, "total_wins": 0, "total_losses": 0, "evolution_score": 100}
     }
     return load_json_db(LEARNING_FILE, default_mind)
 
-def apply_swarm_genetic_feedback(ai_mind, outcome_success):
-    stats = ai_mind["neural_memory_stats"]
-    weights = ai_mind["weights"]
-    
-    if outcome_success:
-        stats["total_wins"] += 1
-        stats["evolution_score"] += 3
-    else:
-        stats["total_losses"] += 1
-        stats["evolution_score"] = max(50, stats["evolution_score"] - 5)
-        ai_mind["generation"] += 1
-        for key in weights:
-            mutation_delta = np.random.uniform(-ai_mind["mutation_rate"], ai_mind["mutation_rate"])
-            weights[key] = max(0.05, min(0.5, weights[key] + mutation_delta))
-            
+def log_every_scan_to_memory(ai_mind, feature_vector, outcome_label):
+    dataset = ai_mind.setdefault("historical_dataset", [])
+    dataset.append({"features": feature_vector, "success": outcome_label})
+    if len(dataset) > 3000:
+        ai_mind["historical_dataset"] = dataset[-3000:]
+    ai_mind["neural_memory_stats"]["total_scans"] += 1
     save_json_db(LEARNING_FILE, ai_mind)
 
 def deep_neural_sequence_prediction(df_closes):
     try:
         prices = df_closes.values[-20:]
-        if len(prices) < 20: return 85
+        if len(prices) < 20: return 50
         gradients = np.gradient(prices)
         momentum_score = np.mean(gradients > 0) * 100
         return int(max(10, min(99, momentum_score)))
     except Exception:
-        return 88
+        return 50
 
 def predict_machine_learning_edge(ai_mind, current_features):
     dataset = ai_mind.get("historical_dataset", [])
     if len(dataset) < 10:
-        return 92
+        return 50
     try:
         X = [d['features'] for d in dataset]
         y = [d['success'] for d in dataset]
+        if len(set(y)) < 2:
+            return 50
         clf = RandomForestClassifier(n_estimators=50, random_state=42)
         clf.fit(X, y)
         prob = clf.predict_proba([current_features])[0][1]
         return int(prob * 100)
     except Exception:
-        return 90
+        return 50
 
 # ==========================================
 # 3. LEVEL-3 ORDER BOOK IMBALANCE ENGINE
@@ -119,7 +111,7 @@ async def analyze_order_book_depth(exchange, symbol):
         return 50
 
 # ==========================================
-# 4. OMNISCIENT MACRO & ADVANCED NLP SENTIMENT
+# 4. OMNISCIENT MACRO & SENTIMENT
 # ==========================================
 def scan_omniscient_macro_and_sentiment():
     sources = [
@@ -156,25 +148,25 @@ def scan_omniscient_macro_and_sentiment():
     return max(10, min(95, macro_score)), max(10, min(95, sentiment_score))
 
 # ==========================================
-# 5. LLM-POWERED AUTONOMOUS COMMENTARY
+# 5. LLM-POWERED COMMENTARY
 # ==========================================
 def generate_llm_market_commentary(symbol, signal, score, sentiment):
     openai_key = os.getenv("OPENAI_API_KEY")
     if not openai_key:
-        return f"Autonomous Swarm Intelligence Matrix: {symbol} validated via order book depth walls and neural sequence momentum with consensus score {score}/100."
+        return f"Demo Paper Testing AI: Asset {symbol} detected with {signal} trend configuration at directional strength of {score}%."
     
     try:
         headers = {"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"}
-        prompt = f"Write a brief, highly professional 2-sentence institutional quantitative report for crypto asset {symbol} triggering a {signal} signal with consensus score {score} and sentiment {sentiment}."
+        prompt = f"Write a brief 2-sentence market evaluation for crypto asset {symbol} showing a {signal} trend with strength {score}%."
         payload = {
             "model": "gpt-4o-mini",
-            "messages": [{"role": "system", "content": "You are an elite quantitative hedge fund AI."}, {"role": "user", "content": prompt}],
-            "max_tokens": 60
+            "messages": [{"role": "system", "content": "You are a quantitative demo trading AI."}, {"role": "user", "content": prompt}],
+            "max_tokens": 50
         }
         res = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload, timeout=5).json()
         return res["choices"][0]["message"]["content"].strip()
     except Exception:
-        return f"Order book imbalance and multi-timeframe confluence confirmed high-probability breakout execution for {symbol}."
+        return f"Order book depth and momentum metrics indicate active {signal} bias for {symbol}."
 
 def quantum_timeframe_matrix(df_15m, df_1h, df_4h):
     try:
@@ -190,31 +182,32 @@ def quantum_timeframe_matrix(df_15m, df_1h, df_4h):
         ema21_4h = df_4h['close'].ewm(span=21).mean().iloc[-1]
         t4h = ema9_4h > ema21_4h
 
-        if t15 and t1h and t4h: return "QUANTUM_BULLISH"
-        elif not t15 and not t1h and not t4h: return "QUANTUM_BEARISH"
-        return "NEUTRAL_MIXED"
+        bull_count = sum([t15, t1h, t4h])
+        if bull_count >= 2: return "BULLISH"
+        return "BEARISH"
     except Exception:
-        return "NEUTRAL_MIXED"
+        return "BULLISH"
 
 # ==========================================
-# 6. TELEGRAM SIGNAL DISPATCHER ONLY
+# 6. TELEGRAM DISPATCHER (PAPER TESTING MODE)
 # ==========================================
 def send_telegram_alert(data):
     token, chat_id = os.getenv("TELEGRAM_BOT_TOKEN"), os.getenv("TELEGRAM_CHAT_ID")
     if not token or not chat_id: return
 
     msg = (
-        f"👑 *GOD-TIER ORDERBOOK SENTIENT AI* 👑\n"
+        f"🧪 *PAPER TESTING AI SIGNAL* 🧪\n"
         f"━━━━━━━━━━━━━━━━━━━\n"
-        f"🧬 *Neural Gen:* `v{data['generation']}` | OrderBook Wall: `{data['orderbook_score']}%`\n"
-        f"📌 *Asset:* `{data['symbol']}` | Verdict: *{data['signal']}*\n"
-        f"📊 *Omniscient Score:* `{data['score']}/100` | *Sentiment:* `{data['sentiment']}/100`\n\n"
-        f"💵 *Price:* `${data['price']}`\n"
-        f"⚡ *RSI:* `{data['rsi']}` | *Volatility (ATR):* `{data['atr_val']}`\n\n"
-        f"📝 *AI Commentary:*\n_{data['commentary']}_\n\n"
-        f"🎯 *Take Profit 1:* `${data['tp1']}`\n"
-        f"🚀 *Take Profit 2:* `${data['tp2']}`\n"
-        f"🛡️ *Dynamic Stop Loss:* `${data['sl']}`\n"
+        f"📌 *Asset:* `{data['symbol']}`\n"
+        f"🔮 *Direction:* *{data['signal']}*\n"
+        f"📈 *Trend Conviction Strength:* `{data['score']}%`\n"
+        f"🧬 *Total Scans Learned:* `{data['total_scans']}`\n\n"
+        f"💵 *Current Price:* `${data['price']}`\n"
+        f"🧱 *OrderBook Wall:* `{data['orderbook_score']}%` | *RSI:* `{data['rsi']}`\n\n"
+        f"📝 *AI Intelligence Report:*\n_{data['commentary']}_\n\n"
+        f"🎯 *Demo Target 1:* `${data['tp1']}`\n"
+        f"🚀 *Demo Target 2:* `${data['tp2']}`\n"
+        f"🛡️ *Demo Stop Loss:* `${data['sl']}`\n"
         f"⏰ *Time:* {datetime.utcnow().strftime('%H:%M UTC')}\n"
         f"━━━━━━━━━━━━━━━━━━━"
     )
@@ -224,10 +217,10 @@ def send_telegram_alert(data):
         pass
 
 # ==========================================
-# 7. ASYNCHRONOUS 24/7 DAEMON ENGINE
+# 7. ASYNCHRONOUS DEMO DAEMON ENGINE
 # ==========================================
 async def async_quantum_market_daemon():
-    print("👑 Booting God-Tier Swarm Intelligence & Order Book Depth Daemon...")
+    print("🧪 Booting Paper Testing Unfiltered AI Daemon...")
     ai_mind = get_quantum_ai_mind()
     
     exchange = ccxtpro.binance({'enableRateLimit': True})
@@ -235,7 +228,7 @@ async def async_quantum_market_daemon():
     try:
         markets = await exchange.load_markets()
         pairs = [sym for sym, m in markets.items() if m['active'] and m['quote'] == 'USDT' and m['spot'] and not is_stablecoin(sym)]
-        print(f"🔍 Loaded {len(pairs)} pairs with Order Book Imbalance Matrix.")
+        print(f"🔍 Loaded {len(pairs)} pairs for autonomous paper testing.")
     except Exception as e:
         print(f"⚠️ Market Load Error: {e}")
         await exchange.close()
@@ -246,9 +239,9 @@ async def async_quantum_market_daemon():
     while True:
         try:
             macro_news, sentiment_score = scan_omniscient_macro_and_sentiment()
-            print(f"🔄 Executing Order Book Depth + Swarm Scan at {datetime.utcnow().strftime('%H:%M:%S UTC')}...")
+            print(f"🔄 Executing Unfiltered Paper Scan at {datetime.utcnow().strftime('%H:%M:%S UTC')}...")
 
-            sample_pairs = pairs[:30]
+            sample_pairs = pairs[:20] # Scan top sample pairs every cycle
             
             for symbol in sample_pairs:
                 try:
@@ -263,9 +256,8 @@ async def async_quantum_market_daemon():
                     df_4h = pd.DataFrame(ohlcv_4h, columns=['t', 'o', 'h', 'l', 'c', 'v'])
                     
                     close = df_1h['close'].iloc[-1]
-                    confluence = quantum_timeframe_matrix(df_15m, df_1h, df_4h)
-                    if confluence == "NEUTRAL_MIXED": continue
-
+                    trend_direction = quantum_timeframe_matrix(df_15m, df_1h, df_4h)
+                    
                     delta = df_1h['close'].diff()
                     gain = delta.clip(lower=0).rolling(14).mean()
                     loss = (-delta.clip(upper=0)).rolling(14).mean()
@@ -278,64 +270,56 @@ async def async_quantum_market_daemon():
                     orderbook_score = await analyze_order_book_depth(exchange, symbol)
                     lstm_score = deep_neural_sequence_prediction(df_1h['close'])
                     
-                    tech_score = 90 if confluence == "QUANTUM_BULLISH" else 15
-                    
+                    tech_score = 80 if trend_direction == "BULLISH" else 30
                     feature_vector = [float(rsi), float(macro_news), float(sentiment_score), float(orderbook_score), float(lstm_score)]
+                    
+                    scan_outcome_label = 1 if trend_direction == "BULLISH" else 0
+                    log_every_scan_to_memory(ai_mind, feature_vector, scan_outcome_label)
+
                     ml_probability = predict_machine_learning_edge(ai_mind, feature_vector)
 
-                    weights = ai_mind.get("weights", {"tech": 0.20, "orderbook": 0.20, "sentiment": 0.20, "deep_lstm": 0.20, "psych": 0.20})
-                    neural_consensus = (
-                        (tech_score * weights["tech"]) + 
-                        (orderbook_score * weights["orderbook"]) + 
-                        (sentiment_score * weights["sentiment"]) + 
-                        (lstm_score * weights["deep_lstm"]) + 
-                        (ml_probability * weights["psych"])
-                    )
+                    # Calculate dynamic strength percentage
+                    strength_score = int((tech_score * 0.4) + (orderbook_score * 0.3) + (lstm_score * 0.3))
+                    strength_score = max(15, min(98, strength_score))
+
+                    signal_label = "BULLISH 🟢" if trend_direction == "BULLISH" else "BEARISH 🔴"
+
+                    # NO RESTRICTIONS: Every evaluated trend now alerts immediately!
+                    last_alert = alerted_history.get(symbol, 0)
+                    current_time = time.time()
                     
-                    final_score = int((neural_consensus * 0.70) + (macro_news * 0.30))
-                    final_score = max(0, min(100, final_score))
+                    # 1 hour cooldown per coin to avoid duplicate spam within the hour
+                    if current_time - last_alert > 3600:
+                        if "BULLISH" in signal_label:
+                            sl = round(close - (atr * 1.5), 4)
+                            tp1 = round(close + (atr * 2.0), 4)
+                            tp2 = round(close + (atr * 4.0), 4)
+                        else:
+                            sl = round(close + (atr * 1.5), 4)
+                            tp1 = round(close - (atr * 2.0), 4)
+                            tp2 = round(close - (atr * 4.0), 4)
 
-                    signal_type = "LONG 🟢" if confluence == "QUANTUM_BULLISH" else "SHORT 🔴"
+                        commentary = generate_llm_market_commentary(symbol, signal_label, strength_score, sentiment_score)
 
-                    if final_score >= 89 and ml_probability >= 88:
-                        last_alert = alerted_history.get(symbol, 0)
-                        current_time = time.time()
-                        
-                        if current_time - last_alert > 14400:
-                            if "LONG" in signal_type:
-                                sl = round(close - (atr * 1.5), 4)
-                                tp1 = round(close + (atr * 2.0), 4)
-                                tp2 = round(close + (atr * 4.0), 4)
-                            else:
-                                sl = round(close + (atr * 1.5), 4)
-                                tp1 = round(close - (atr * 2.0), 4)
-                                tp2 = round(close - (atr * 4.0), 4)
+                        payload = {
+                            "symbol": symbol, "signal": signal_label, "score": strength_score,
+                            "price": close, "rsi": round(rsi, 1), "total_scans": ai_mind["neural_memory_stats"]["total_scans"],
+                            "orderbook_score": orderbook_score, "sentiment": sentiment_score, 
+                            "atr_val": round(atr, 4), "commentary": commentary, "sl": sl, "tp1": tp1, "tp2": tp2
+                        }
 
-                            commentary = generate_llm_market_commentary(symbol, signal_type, final_score, sentiment_score)
+                        print(f"🧪 Paper Test Alert Dispatched: {symbol} ({signal_label} - Strength: {strength_score}%)")
+                        send_telegram_alert(payload)
 
-                            payload = {
-                                "symbol": symbol, "signal": signal_type, "score": final_score,
-                                "price": close, "rsi": round(rsi, 1), "generation": ai_mind["generation"],
-                                "evolution_score": ai_mind["neural_memory_stats"]["evolution_score"],
-                                "orderbook_score": orderbook_score, "sentiment": sentiment_score, 
-                                "atr_val": round(atr, 4), "commentary": commentary, "sl": sl, "tp1": tp1, "tp2": tp2
-                            }
-
-                            print(f"🔥 God-Tier Setup Dispatched: {symbol} ({signal_type} - Score: {final_score})")
-                            send_telegram_alert(payload)
-
-                            ai_mind["historical_dataset"].append({"features": feature_vector, "success": 1})
-                            apply_swarm_genetic_feedback(ai_mind, outcome_success=True)
-
-                            alerted_history[symbol] = current_time
-                            save_json_db(ALERTED_HISTORY_FILE, alerted_history)
+                        alerted_history[symbol] = current_time
+                        save_json_db(ALERTED_HISTORY_FILE, alerted_history)
                     
-                    await asyncio.sleep(0.4)
+                    await asyncio.sleep(0.3)
                 except Exception:
                     continue
 
-            print("💤 Cycle complete. Monitoring live Order Book Swarm stream...")
-            break # GitHub actions ke liye aik dafa scan karke exit hona behtar hai taake cron loop na phanse
+            print("💤 Paper test scan cycle finished and logged.")
+            break
 
         except Exception as e:
             print(f"⚠️ Daemon Exception: {e}")
@@ -347,4 +331,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(async_quantum_market_daemon())
     except KeyboardInterrupt:
-        print("🛑 God-Tier Daemon manually terminated.")
+        print("🛑 Paper Daemon terminated.")
