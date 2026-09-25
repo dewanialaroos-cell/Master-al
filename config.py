@@ -13,8 +13,8 @@ OHLCV_LIMIT = 220
 HTTP_TIMEOUT = 15
 
 # Exchange IDs
-SPOT_EXCHANGES = ["binance", "okx", "bybit", "kucoin"]
-FUTURES_EXCHANGES = ["binanceusdm", "okx", "bybit", "kucoin"]
+SPOT_EXCHANGES = ["bybit", "okx", "gate", "kucoin"]
+FUTURES_EXCHANGES = ["bybit", "okx", "gate", "kucoin"]
 
 # Stablecoins to exclude from market scanning
 STABLECOINS = {
