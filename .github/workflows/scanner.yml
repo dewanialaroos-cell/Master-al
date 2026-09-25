@@ -30,12 +30,15 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CMC_API_KEY: ${{ secrets.CMC_API_KEY }}
         run: |
           python main.py
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git status
-          git add ai_quantum_mind.json alerted_history.json || true
+          # Check if files exist before adding to avoid pathspec errors
+          if [ -f ai_quantum_mind.json ]; then git add ai_quantum_mind.json; fi
+          if [ -f alerted_history.json ]; then git add alerted_history.json; fi
           git diff --quiet && git diff --staged --quiet || git commit -m "🤖 AI Self-Learning Memory Update [skip ci]"
           git push || true
+          
