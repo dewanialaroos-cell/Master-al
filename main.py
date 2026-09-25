@@ -223,17 +223,34 @@ async def async_quantum_market_daemon():
     print("🧪 Booting Paper Testing Unfiltered AI Daemon...")
     ai_mind = get_quantum_ai_mind()
     
-    # Binance ki bajaye Bybit use kar rahe hain jo GitHub Actions par unblocked hai
-    exchange = ccxtpro.bybit({'enableRateLimit': True})
+        # Multi-exchange fallback array taake koi aik block ho toh doosra chal jaye
+    exchanges_to_try = [
+        ccxtpro.okx({'enableRateLimit': True}),
+        ccxtpro.gate({'enableRateLimit': True}),
+        ccxtpro.kucoin({'enableRateLimit': True}),
+        ccxtpro.bybit({'enableRateLimit': True})
+    ]
 
-    try:
-        markets = await exchange.load_markets()
-        pairs = [sym for sym, m in markets.items() if m['active'] and m['quote'] == 'USDT' and m['spot'] and not is_stablecoin(sym)]
-        print(f"🔍 Loaded {len(pairs)} pairs for autonomous paper testing.")
-    except Exception as e:
-        print(f"⚠️ Market Load Error: {e}")
-        await exchange.close()
+    exchange = None
+    pairs = []
+
+    for ex in exchanges_to_try:
+        try:
+            print(f"🔄 Connecting to {ex.id.upper()}...")
+            markets = await ex.load_markets()
+            pairs = [sym for sym, m in markets.items() if m['active'] and m['quote'] == 'USDT' and m['spot'] and not is_stablecoin(sym)]
+            if pairs:
+                exchange = ex
+                print(f"🔍 Successfully connected to {exchange.id.upper()}! Loaded {len(pairs)} pairs.")
+                break
+        except Exception as e:
+            print(f"⚠️ {ex.id.upper()} Connection Failed: {e}")
+            await ex.close()
+
+    if not exchange or not pairs:
+        print("❌ All exchanges blocked or failed on cloud server.")
         return
+        
 
     alerted_history = load_json_db(ALERTED_HISTORY_FILE, {})
 
