@@ -223,7 +223,8 @@ async def async_quantum_market_daemon():
     print("🧪 Booting Paper Testing Unfiltered AI Daemon...")
     ai_mind = get_quantum_ai_mind()
     
-    exchange = ccxtpro.binance({'enableRateLimit': True})
+    # Binance ki bajaye Bybit use kar rahe hain jo GitHub Actions par unblocked hai
+    exchange = ccxtpro.bybit({'enableRateLimit': True})
 
     try:
         markets = await exchange.load_markets()
@@ -332,3 +333,4 @@ if __name__ == "__main__":
         asyncio.run(async_quantum_market_daemon())
     except KeyboardInterrupt:
         print("🛑 Paper Daemon terminated.")
+                
