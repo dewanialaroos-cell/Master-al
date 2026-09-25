@@ -22,8 +22,12 @@ def is_stablecoin(symbol):
     base = symbol.split('/')[0].split(':')[0].upper()
     return base in EXCLUDED_STABLES
 
-LEARNING_FILE = "ai_quantum_mind.json"
-ALERTED_HISTORY_FILE = "alerted_history.json"
+# Yeh line automatically exact root directory ka path pakad leti hai
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+LEARNING_FILE = os.path.join(ROOT_DIR, "ai_quantum_mind.json")
+ALERTED_HISTORY_FILE = os.path.join(ROOT_DIR, "alerted_history.json")
+
 
 def load_json_db(filename, default_val):
     if os.path.exists(filename):
