@@ -1,4 +1,4 @@
-name: Run Crypto Master AI Scanner
+Name: Run Crypto Master AI Scanner
 
 on:
   schedule:
@@ -32,12 +32,15 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           CMC_API_KEY: ${{ secrets.CMC_API_KEY }}
         run: |
+          # Ensure JSON memory files exist before running python/git
+          touch ai_quantum_mind.json alerted_history.json
+          
           python main.py
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git status
-          # Check if files exist before adding to avoid pathspec errors
-                    # Force add use karein taake files lazmi commit ho jayein
+          
+          # Force add use karein taake files lazmi commit ho jayein
           git add -f ai_quantum_mind.json
           git add -f alerted_history.json
           git diff --quiet && git diff --staged --quiet || git commit -m "🤖 AI Self-Learning Memory Update [skip ci]"
