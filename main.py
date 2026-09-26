@@ -42,8 +42,9 @@ def save_json_db(filename, data):
     try:
         with open(filename, "w") as f:
             json.dump(data, f, indent=4)
+        print(f"✅ Successfully saved database to {filename}") # Yeh line add karein
     except Exception as e:
-        print(f"Database Sync Error ({filename}): {e}")
+        print(f"❌ Database Sync Error ({filename}): {e}") # Error print hoga
 
 # ==========================================
 # 2. CONTINUOUS LEARNING SWARM MIND
@@ -64,8 +65,8 @@ def log_every_scan_to_memory(ai_mind, feature_vector, outcome_label):
     if len(dataset) > 3000:
         ai_mind["historical_dataset"] = dataset[-3000:]
     ai_mind["neural_memory_stats"]["total_scans"] += 1
+    print(f"🧬 Logging scan to memory. Total scans now: {ai_mind['neural_memory_stats']['total_scans']}") # Yeh line add karein
     save_json_db(LEARNING_FILE, ai_mind)
-
 def deep_neural_sequence_prediction(df_closes):
     try:
         prices = df_closes.values[-20:]
